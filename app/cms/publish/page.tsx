@@ -288,7 +288,12 @@ const PublishContentForm = () => {
 									{/* Step 2: Professional Background */}
 									{currentStep === 1 && (
 										<>
-											<CardHeader>5u8900-`uyt`</CardHeader>
+											<CardHeader>
+												<CardTitle>Professional Background</CardTitle>
+												<CardDescription>
+													Tell us about your professional experience
+												</CardDescription>
+											</CardHeader>
 											<CardContent className="space-y-4">
 												<motion.div
 													variants={fadeInUp}
