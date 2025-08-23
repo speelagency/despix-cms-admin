@@ -2,24 +2,8 @@
 
 import * as React from 'react';
 import {
-	closestCenter,
-	DndContext,
-	KeyboardSensor,
-	MouseSensor,
-	TouchSensor,
-	useSensor,
-	useSensors,
-	type DragEndEvent,
 	type UniqueIdentifier,
 } from '@dnd-kit/core';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import {
-	arrayMove,
-	SortableContext,
-	useSortable,
-	verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import {
 	IconChevronDown,
 	IconChevronLeft,
@@ -30,11 +14,9 @@ import {
 	IconCircleCheckFilled,
 	IconCircleX,
 	IconDotsVertical,
-	IconGripVertical,
 	IconHourglass,
 	IconLayoutColumns,
 	IconLoader,
-	IconPlus,
 	IconTrendingUp,
 } from '@tabler/icons-react';
 import {
@@ -47,13 +29,11 @@ import {
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	Row,
 	SortingState,
 	useReactTable,
 	VisibilityState,
 } from '@tanstack/react-table';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
-import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -65,7 +45,6 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
 	Drawer,
 	DrawerClose,
@@ -102,7 +81,6 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Timestamp } from 'firebase/firestore';
 
 export const schema = z.object({
