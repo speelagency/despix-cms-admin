@@ -18,7 +18,7 @@ export default function RootLayout({
 
 	useEffect(() => {
 		if (!loading && !user) {
-			redirect('login');
+			redirect('/login');
 		}
 	}, [loading, user]);
 
