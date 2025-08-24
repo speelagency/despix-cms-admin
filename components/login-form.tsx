@@ -5,15 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
 import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const router = useRouter();
+	const searchParams = useSearchParams();
 
 	const [signInWithEmailAndPassword] = useSignInWithEmailAndPassword(auth);
 
@@ -25,7 +26,16 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 			console.log({ res });
 			setEmail('');
 			setPassword('');
-			router.push('/cms');
+
+			// Check if there's a redirect URL parameter
+			const redirectUrl = searchParams.get('redirect');
+			if (redirectUrl) {
+				// Redirect back to the original URL with all parameters preserved
+				router.push(redirectUrl);
+			} else {
+				// Default redirect to CMS dashboard
+				router.push('/cms');
+			}
 		} catch (error) {
 			console.error(error);
 		}

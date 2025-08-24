@@ -1,179 +1,197 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue
+} from '@/components/ui/select';
+import { SiteHeader } from '@/components/site-header';
+import { Device } from '@/app/types/types';
+import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth, db } from '@/lib/firebase';
+import { Spinner } from '@/components/ui/shadcn-io/spinner';
+import { toast } from 'sonner';
 
 export default function RegisterDevice() {
-    const searchParams = useSearchParams();
+	const searchParams = useSearchParams();
+	const [user, loading] = useAuthState(auth);
+	const [registering, setRegistering] = useState(false);
+	const router = useRouter();
 
-    const [formData, setFormData] = useState({
-        deviceName: '',
-        deviceType: '',
-        location: '',
-        description: '',
-        serialNumber: '',
-        deviceId: '',
-        resolution: '',
-        isTouch: false
-    });
+	const [formData, setFormData] = useState<Partial<Device>>({
+		name: '',
+		type: '',
+		status: 'waiting',
+		resolution: '',
+		isTouch: false,
+		lastUpdated: null
+	});
 
-    // Extract URL parameters on component mount
-    useEffect(() => {
-        const deviceId = searchParams.get('deviceId') || '';
-        const resolution = searchParams.get('resolution') || '';
-        const isTouch = searchParams.get('isTouch') === 'true';
+	// Extract URL parameters on component mount
+	useEffect(() => {
+		const deviceId = searchParams.get('deviceId') || '';
+		const resolution = searchParams.get('resolution') || '';
+		const isTouch = searchParams.get('isTouch') === 'true';
 
-        setFormData(prev => ({
-            ...prev,
-            deviceId,
-            resolution,
-            isTouch
-        }));
-    }, [searchParams]);
+		if (!deviceId) {
+			router.replace('/cms');
+		}
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Handle device registration logic here
-        console.log('Device registration data:', formData);
-    };
+		setFormData(prev => ({
+			...prev,
+			resolution,
+			isTouch
+		}));
+	}, [searchParams]);
 
-    const handleInputChange = (field: string, value: string | boolean) => {
-        setFormData(prev => ({
-            ...prev,
-            [field]: value
-        }));
-    };
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
 
-    return (
-        <div className="container mx-auto p-6">
-            <div className="max-w-2xl mx-auto">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Register New Device</CardTitle>
-                        <CardDescription>
-                            Add a new device to your CMS system
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="deviceName">Device Name</Label>
-                                    <Input
-                                        id="deviceName"
-                                        value={formData.deviceName}
-                                        onChange={(e) => handleInputChange('deviceName', e.target.value)}
-                                        placeholder="Enter device name"
-                                        required
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="deviceType">Device Type</Label>
-                                    <Select value={formData.deviceType} onValueChange={(value) => handleInputChange('deviceType', value)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select device type" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="display">Display</SelectItem>
-                                            <SelectItem value="sensor">Sensor</SelectItem>
-                                            <SelectItem value="controller">Controller</SelectItem>
-                                            <SelectItem value="gateway">Gateway</SelectItem>
-                                            <SelectItem value="other">Other</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
+		const deviceId = searchParams.get('deviceId') || '';
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="deviceId">Device ID</Label>
-                                    <Input
-                                        id="deviceId"
-                                        value={formData.deviceId}
-                                        onChange={(e) => handleInputChange('deviceId', e.target.value)}
-                                        placeholder="Device ID from URL"
-                                        readOnly
-                                        className="bg-gray-50"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="serialNumber">Serial Number</Label>
-                                    <Input
-                                        id="serialNumber"
-                                        value={formData.serialNumber}
-                                        onChange={(e) => handleInputChange('serialNumber', e.target.value)}
-                                        placeholder="Enter device serial number"
-                                        required
-                                    />
-                                </div>
-                            </div>
+		if (!user) {
+			console.error('No user logged in');
+			return;
+		} else if (!deviceId) {
+			console.error('No device id found');
+			return;
+		}
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="resolution">Resolution</Label>
-                                    <Input
-                                        id="resolution"
-                                        value={formData.resolution}
-                                        onChange={(e) => handleInputChange('resolution', e.target.value)}
-                                        placeholder="Resolution from URL"
-                                        readOnly
-                                        className="bg-gray-50"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="location">Location</Label>
-                                    <Input
-                                        id="location"
-                                        value={formData.location}
-                                        onChange={(e) => handleInputChange('location', e.target.value)}
-                                        placeholder="Enter device location"
-                                        required
-                                    />
-                                </div>
-                            </div>
+		// Create the complete device data with current timestamp and user ID
+		const completeDeviceData: Device = {
+			...(formData as Device),
+			registered: Timestamp.now(),
+			adminId: user.uid
+		};
 
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="isTouch"
-                                    checked={formData.isTouch}
-                                    onCheckedChange={(checked) => handleInputChange('isTouch', checked as boolean)}
-                                    disabled
-                                />
-                                <Label htmlFor="isTouch" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                    Touch Screen (from URL)
-                                </Label>
-                            </div>
+		const deviceRef = doc(db, 'devices', deviceId);
+		const deviceSnap = await getDoc(deviceRef);
 
-                            <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    value={formData.description}
-                                    onChange={(e) => handleInputChange('description', e.target.value)}
-                                    placeholder="Enter device description"
-                                    rows={3}
-                                />
-                            </div>
+		setRegistering(true);
 
-                            <div className="flex gap-4">
-                                <Button type="submit" className="flex-1">
-                                    Register Device
-                                </Button>
-                                <Button type="button" variant="outline" className="flex-1">
-                                    Cancel
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
-    );
+		if (deviceSnap.exists()) {
+			// console.log("Document data:", deviceSnap.data())
+			toast('Dispositivo ya existe', {
+				description: 'Este dispositivo ya fue registrado'
+			});
+		} else {
+			try {
+				await setDoc(deviceRef, completeDeviceData);
+				router.push('publish');
+			} catch (err) {
+				console.error('❌ Error registering device:', err);
+				// presentToast('Hubo un error, intentá de nuevo');
+				// optional: show toast or UI error
+			} finally {
+				setRegistering(false); // always runs
+			}
+		}
+
+		setRegistering(false);
+	};
+
+	const handleInputChange = (field: string, value: string) => {
+		setFormData(prev => ({
+			...prev,
+			[field]: value
+		}));
+	};
+
+	if (loading) {
+		return <div>Loading...</div>;
+	}
+
+	return (
+		<>
+			<SiteHeader label={'Registrar dispositivo'} />
+			<div className='container mx-auto p-6'>
+				<div className='max-w-2xl mx-auto'>
+					<Card>
+						<CardHeader>
+							<CardTitle>Registrá tu nuevo dispositivo</CardTitle>
+							<CardDescription>
+								Agregá tu nuevo dispositivo al sistema de CMS
+							</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<form onSubmit={handleSubmit} className='space-y-12'>
+								<div className='space-y-4'>
+									<div className='space-y-2'>
+										<Label htmlFor='name'>Nombre del dispositivo</Label>
+										<Input
+											id='name'
+											value={formData.name}
+											onChange={e =>
+												handleInputChange('name', e.target.value)
+											}
+											placeholder='Enter device name'
+											required
+										/>
+									</div>
+									<div className='space-y-2'>
+										<Label htmlFor='type'>Tipo de dispositivo</Label>
+										<Select
+											value={formData.type}
+											onValueChange={value =>
+												handleInputChange('type', value)
+											}
+											required
+										>
+											<SelectTrigger>
+												<SelectValue placeholder='Select device type' />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value='Totem Digital'>
+													Totem Digital
+												</SelectItem>
+												<SelectItem value='Pantalla Vertical Doble'>
+													Pantalla Vertical Doble
+												</SelectItem>
+												<SelectItem value='Pantalla de Escritorio'>
+													Pantalla de Escritorio
+												</SelectItem>
+												<SelectItem value='Pantalla de Sobremesa con Cargador'>
+													Pantalla de Sobremesa con Cargador
+												</SelectItem>
+												<SelectItem value='Pantalla de Piso'>
+													Pantalla de Piso
+												</SelectItem>
+												<SelectItem value='Pantalla de Señalización Digital'>
+													Pantalla de Señalización Digital
+												</SelectItem>
+												<SelectItem value='Other'>Otro</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+								</div>
+
+								<div className='flex gap-4'>
+									<Button type='button' variant='outline' className='flex-1'>
+										Cancel
+									</Button>
+									<Button
+										type='submit'
+										className='flex-1'
+										disabled={!formData.name || !formData.type || registering}
+									>
+										Registrar dispositivo{' '}
+										{registering && <Spinner variant='circle' />}
+									</Button>
+								</div>
+							</form>
+						</CardContent>
+					</Card>
+				</div>
+			</div>
+		</>
+	);
 }

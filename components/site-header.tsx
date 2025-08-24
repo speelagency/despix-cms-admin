@@ -12,7 +12,7 @@ export function SiteHeader({ label }: { label: string }) {
 					className="mx-2 data-[orientation=vertical]:h-4"
 				/>
 				<h1 className="text-base font-medium">{label}</h1>
-				<div className="ml-auto flex items-center gap-2">
+				{/* <div className="ml-auto flex items-center gap-2">
 					<Button
 						variant="ghost"
 						asChild
@@ -28,7 +28,7 @@ export function SiteHeader({ label }: { label: string }) {
 							GitHub
 						</a>
 					</Button>
-				</div>
+				</div> */}
 			</div>
 		</header>
 	);

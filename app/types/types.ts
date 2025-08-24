@@ -11,8 +11,8 @@ export interface MediaItem {
 }
 
 export interface Zone {
-	id: string;
 	type: string;
+	duration?: string;
 	items: MediaItem[];
 }
 
@@ -23,22 +23,28 @@ export interface Layout {
 	template: '1-column' | '2-row' | '3-column' | string; // define layout types
 }
 
+export interface ZoneSizes {
+	[key: string]: string; // zone key -> size value (e.g., "60%", "200px")
+}
+
 export interface CompiledConfig {
 	layout: string;
 	zones: {
 		[key: string]: Zone;
-	};
-	updatedAt: string; // or Firestore Timestamp
+	} | null;
+	zoneSizes?: ZoneSizes;
 }
 
 export interface Device {
-	deviceId: string;
+	id: string;
 	name: string;
-	type: string;
 	status: string;
-	resolution: string;
+	type: string;
 	isTouch: boolean;
 	registered: Timestamp;
 	lastUpdated: Timestamp;
-	compiledConfig?: CompiledConfig;
+	compiledConfig: CompiledConfig;
+	adminId: string;
+	activeGroupId?: string;
+	resolution?: string;
 }

@@ -10,7 +10,6 @@ export default function Page() {
 	const { devices, loading, error } = useGetDevices();
 
 	useEffect(() => {
-		debugger;
 		if (devices.length > 0) {
 			console.log(devices);
 		}

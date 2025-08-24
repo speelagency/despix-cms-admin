@@ -15,12 +15,16 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	const [user, loading, error] = useAuthState(auth);
+	const router = useRouter();
 
 	useEffect(() => {
 		if (!loading && !user) {
-			redirect('/login');
+			// Preserve current URL parameters when redirecting to login
+			const currentUrl = window.location.href;
+			const loginUrl = `/login?redirect=${encodeURIComponent(currentUrl)}`;
+			router.push(loginUrl);
 		}
-	}, [loading, user]);
+	}, [loading, user, router]);
 
 	return !loading ? (
 		// <SidebarProvider>

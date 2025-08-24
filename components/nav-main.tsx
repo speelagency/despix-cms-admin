@@ -3,6 +3,7 @@
 import {
 	IconCirclePlusFilled,
 	IconMail,
+	IconPhoto,
 	IconPhotoFilled,
 	IconUpload,
 	type Icon,
@@ -33,15 +34,15 @@ export function NavMain({
 				<SidebarMenu>
 					<SidebarMenuItem className="flex items-center gap-2">
 						<Link
-							href={'/cms'}
+							href={'/cms/content'}
 							prefetch={true}
 							className="w-full"
 						>
 							<SidebarMenuButton
 								tooltip="Quick Create"
-								className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
+							// className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
 							>
-								<IconPhotoFilled />
+								<IconPhoto />
 								<span>Contenido</span>
 							</SidebarMenuButton>
 						</Link>
