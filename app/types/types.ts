@@ -42,9 +42,8 @@ export interface Device {
 	type: string;
 	isTouch: boolean;
 	registered: Timestamp;
-	lastUpdated: Timestamp;
-	compiledConfig: CompiledConfig;
+	lastUpdated: Timestamp | null;
 	adminId: string;
-	activeGroupId?: string;
+	compiledConfig?: CompiledConfig;
 	resolution?: string;
 }

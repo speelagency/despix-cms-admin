@@ -16,7 +16,10 @@ export const useGetDevices = () => {
 			snapshot => {
 				const devices: Device[] = [];
 				snapshot.forEach(doc => {
-					devices.push(doc.data() as Device);
+					devices.push({
+						id: doc.id, // ✅ Firestore doc id
+						...(doc.data() as Omit<Device, 'id'>)
+					});
 				});
 
 				setDevices(devices);

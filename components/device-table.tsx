@@ -11,10 +11,12 @@ import {
 	IconCircleCheck,
 	IconCircleCheckFilled,
 	IconCircleX,
+	IconDevicesPlus,
 	IconDotsVertical,
 	IconHourglass,
 	IconLayoutColumns,
 	IconLoader,
+	IconPlus,
 	IconTrendingUp
 } from '@tabler/icons-react';
 import {
@@ -82,14 +84,15 @@ import {
 import { Timestamp } from 'firebase/firestore';
 
 export const schema = z.object({
+	id: z.string(),
 	name: z.string(),
-	deviceId: z.string(),
-	type: z.string(),
 	status: z.string(),
-	resolution: z.string(),
+	type: z.string(),
+	isTouch: z.boolean(),
 	registered: z.custom<Timestamp>(),
-	lastUpdated: z.custom<Timestamp>(),
-	isTouch: z.boolean()
+	lastUpdated: z.custom<Timestamp>().nullable(),
+	resolution: z.string().optional(),
+	adminId: z.string()
 });
 
 const columns: ColumnDef<z.infer<typeof schema>>[] = [
@@ -115,7 +118,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
 	},
 	{
 		accessorKey: 'status',
-		header: 'Estatus',
+		header: 'Estado',
 		cell: ({ row }) => (
 			<Badge variant='outline' className='text-muted-foreground px-1.5'>
 				{row.original.status === 'ready' ? (
@@ -147,7 +150,10 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
 	{
 		accessorKey: 'lastUpdated',
 		header: 'Última actualización',
-		cell: ({ row }) => new Date(row.original.lastUpdated.seconds * 1000).toDateString()
+		cell: ({ row }) => {
+			if (row.original.lastUpdated)
+				return new Date(row.original.lastUpdated.seconds * 1000).toDateString();
+		}
 	},
 	{
 		id: 'actions',
@@ -187,7 +193,7 @@ export function DeviceTable({ data: initialData }: { data: z.infer<typeof schema
 	});
 
 	const dataIds = React.useMemo<UniqueIdentifier[]>(
-		() => data?.map(({ deviceId }) => deviceId) || [],
+		() => data?.map(({ id }) => id) || [],
 		[data]
 	);
 
@@ -201,7 +207,7 @@ export function DeviceTable({ data: initialData }: { data: z.infer<typeof schema
 			columnFilters,
 			pagination
 		},
-		getRowId: row => row.deviceId.toString(),
+		getRowId: row => row.id?.toString(),
 		enableRowSelection: true,
 		onRowSelectionChange: setRowSelection,
 		onSortingChange: setSorting,
@@ -222,7 +228,7 @@ export function DeviceTable({ data: initialData }: { data: z.infer<typeof schema
 		// 	className="w-full flex-col justify-start gap-6"
 		// >
 		<div className='w-full flex flex-col justify-start gap-6'>
-			<div className='flex items-center justify-between px-4 lg:px-6'>
+			<div className='flex items-center justify-end px-4 lg:px-6'>
 				<Label htmlFor='view-selector' className='sr-only'>
 					View
 				</Label>
@@ -252,6 +258,12 @@ export function DeviceTable({ data: initialData }: { data: z.infer<typeof schema
 					<TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
 				</TabsList> */}
 				<div className='flex items-center gap-2'>
+					<Button variant='outline' size='sm'>
+						<IconDevicesPlus />
+						<span className='hidden lg:inline'>Agregar dispositivo</span>
+						<span className='lg:hidden'>Agregar</span>
+					</Button>
+
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button variant='outline' size='sm'>
@@ -285,13 +297,6 @@ export function DeviceTable({ data: initialData }: { data: z.infer<typeof schema
 								})}
 						</DropdownMenuContent>
 					</DropdownMenu>
-					{/* <Button
-						variant="outline"
-						size="sm"
-					>
-						<IconPlus />
-						<span className="hidden lg:inline">Add Section</span>
-					</Button> */}
 				</div>
 			</div>
 
@@ -597,7 +602,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
 								</Select>
 							</div>
 							<div className='flex flex-col gap-3'>
-								<Label htmlFor='status'>Estatus</Label>
+								<Label htmlFor='status'>Estado</Label>
 								<Select defaultValue={item.status}>
 									<SelectTrigger id='status' className='w-full'>
 										<SelectValue placeholder='Select a status' />
