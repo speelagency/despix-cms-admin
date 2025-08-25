@@ -32,7 +32,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/ui/dialog';
-import Content from '../content/page';
+import ContentBrowser from '@/components/content-browser';
 import { SelectedContentTable } from '@/components/selected-content-table';
 import DeviceSelector from '@/components/device-selector';
 import { db } from '@/lib/firebase';
@@ -684,8 +684,7 @@ const PublishContentForm = () => {
 					</DialogDescription>
 				</DialogHeader>
 				<div className="h-full overflow-y-scroll">
-					<Content
-						hideHeader
+					<ContentBrowser
 						selectedItems={formData.zones?.[activeZone]?.items || []}
 						handleNewItems={handleNewItems}
 						// ref={contentRef}

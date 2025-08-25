@@ -1,13 +1,6 @@
 'use client';
 
-import {
-	IconCirclePlusFilled,
-	IconMail,
-	IconPhoto,
-	IconPhotoFilled,
-	IconUpload,
-	type Icon,
-} from '@tabler/icons-react';
+import { IconPhoto, IconUpload, type Icon } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -40,7 +33,7 @@ export function NavMain({
 						>
 							<SidebarMenuButton
 								tooltip="Quick Create"
-							// className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
+								// className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
 							>
 								<IconPhoto />
 								<span>Contenido</span>

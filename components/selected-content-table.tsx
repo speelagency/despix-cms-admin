@@ -20,17 +20,7 @@ import {
 	verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import {
-	IconChevronDown,
-	IconChevronLeft,
-	IconChevronRight,
-	IconChevronsLeft,
-	IconChevronsRight,
-	IconDotsVertical,
-	IconGripVertical,
-	IconLayoutColumns,
-	IconPlus,
-} from '@tabler/icons-react';
+import { IconDotsVertical, IconGripVertical } from '@tabler/icons-react';
 import {
 	ColumnDef,
 	ColumnFiltersState,
@@ -53,7 +43,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
 	DropdownMenu,
-	DropdownMenuCheckboxItem,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
@@ -62,13 +51,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
-import {
 	Table,
 	TableBody,
 	TableCell,
@@ -76,7 +58,6 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
 
 export const schema = z.object({

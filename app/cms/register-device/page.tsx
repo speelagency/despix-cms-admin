@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import {
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
-	SelectValue
+	SelectValue,
 } from '@/components/ui/select';
 import { SiteHeader } from '@/components/site-header';
 import { Device } from '@/app/types/types';
@@ -21,7 +21,7 @@ import { auth, db } from '@/lib/firebase';
 import { Spinner } from '@/components/ui/shadcn-io/spinner';
 import { toast } from 'sonner';
 
-export default function RegisterDevice() {
+function RegisterDeviceInner() {
 	const searchParams = useSearchParams();
 	const [user, loading] = useAuthState(auth);
 	const [registering, setRegistering] = useState(false);
@@ -33,7 +33,7 @@ export default function RegisterDevice() {
 		status: 'waiting',
 		resolution: '',
 		isTouch: false,
-		lastUpdated: null
+		lastUpdated: null,
 	});
 
 	// Extract URL parameters on component mount
@@ -49,7 +49,7 @@ export default function RegisterDevice() {
 		setFormData(prev => ({
 			...prev,
 			resolution,
-			isTouch
+			isTouch,
 		}));
 	}, [searchParams]);
 
@@ -70,7 +70,7 @@ export default function RegisterDevice() {
 		const completeDeviceData: Device = {
 			...(formData as Device),
 			registered: Timestamp.now(),
-			adminId: user.uid
+			adminId: user.uid,
 		};
 
 		const deviceRef = doc(db, 'devices', deviceId);
@@ -81,7 +81,7 @@ export default function RegisterDevice() {
 		if (deviceSnap.exists()) {
 			// console.log("Document data:", deviceSnap.data())
 			toast('Dispositivo ya existe', {
-				description: 'Este dispositivo ya fue registrado'
+				description: 'Este dispositivo ya fue registrado',
 			});
 		} else {
 			try {
@@ -102,7 +102,7 @@ export default function RegisterDevice() {
 	const handleInputChange = (field: string, value: string) => {
 		setFormData(prev => ({
 			...prev,
-			[field]: value
+			[field]: value,
 		}));
 	};
 
@@ -113,78 +113,74 @@ export default function RegisterDevice() {
 	return (
 		<>
 			<SiteHeader label={'Registrar dispositivo'} />
-			<div className='container mx-auto p-6'>
-				<div className='max-w-2xl mx-auto'>
+			<div className="container mx-auto p-6">
+				<div className="max-w-2xl mx-auto">
 					<Card>
 						<CardHeader>
 							<CardTitle>Registrá tu nuevo dispositivo</CardTitle>
-							<CardDescription>
-								Agregá tu nuevo dispositivo al sistema de CMS
-							</CardDescription>
+							<CardDescription>Agregá tu nuevo dispositivo al sistema de CMS</CardDescription>
 						</CardHeader>
 						<CardContent>
-							<form onSubmit={handleSubmit} className='space-y-12'>
-								<div className='space-y-4'>
-									<div className='space-y-2'>
-										<Label htmlFor='name'>Nombre del dispositivo</Label>
+							<form
+								onSubmit={handleSubmit}
+								className="space-y-12"
+							>
+								<div className="space-y-4">
+									<div className="space-y-2">
+										<Label htmlFor="name">Nombre del dispositivo</Label>
 										<Input
-											id='name'
+											id="name"
 											value={formData.name}
-											onChange={e =>
-												handleInputChange('name', e.target.value)
-											}
-											placeholder='Enter device name'
+											onChange={e => handleInputChange('name', e.target.value)}
+											placeholder="Enter device name"
 											required
 										/>
 									</div>
-									<div className='space-y-2'>
-										<Label htmlFor='type'>Tipo de dispositivo</Label>
+									<div className="space-y-2">
+										<Label htmlFor="type">Tipo de dispositivo</Label>
 										<Select
 											value={formData.type}
-											onValueChange={value =>
-												handleInputChange('type', value)
-											}
+											onValueChange={value => handleInputChange('type', value)}
 											required
 										>
 											<SelectTrigger>
-												<SelectValue placeholder='Select device type' />
+												<SelectValue placeholder="Select device type" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value='Totem Digital'>
-													Totem Digital
-												</SelectItem>
-												<SelectItem value='Pantalla Vertical Doble'>
+												<SelectItem value="Totem Digital">Totem Digital</SelectItem>
+												<SelectItem value="Pantalla Vertical Doble">
 													Pantalla Vertical Doble
 												</SelectItem>
-												<SelectItem value='Pantalla de Escritorio'>
+												<SelectItem value="Pantalla de Escritorio">
 													Pantalla de Escritorio
 												</SelectItem>
-												<SelectItem value='Pantalla de Sobremesa con Cargador'>
+												<SelectItem value="Pantalla de Sobremesa con Cargador">
 													Pantalla de Sobremesa con Cargador
 												</SelectItem>
-												<SelectItem value='Pantalla de Piso'>
-													Pantalla de Piso
-												</SelectItem>
-												<SelectItem value='Pantalla de Señalización Digital'>
+												<SelectItem value="Pantalla de Piso">Pantalla de Piso</SelectItem>
+												<SelectItem value="Pantalla de Señalización Digital">
 													Pantalla de Señalización Digital
 												</SelectItem>
-												<SelectItem value='Other'>Otro</SelectItem>
+												<SelectItem value="Other">Otro</SelectItem>
 											</SelectContent>
 										</Select>
 									</div>
 								</div>
 
-								<div className='flex gap-4'>
-									<Button type='button' variant='outline' className='flex-1'>
+								<div className="flex gap-4">
+									<Button
+										type="button"
+										variant="outline"
+										className="flex-1"
+									>
 										Cancel
 									</Button>
 									<Button
-										type='submit'
-										className='flex-1'
+										type="submit"
+										className="flex-1"
 										disabled={!formData.name || !formData.type || registering}
 									>
-										Registrar dispositivo{' '}
-										{registering && <Spinner variant='circle' />}
+										Registrar dispositivo {registering && <Spinner variant="circle" />}
 									</Button>
 								</div>
 							</form>
@@ -193,5 +189,13 @@ export default function RegisterDevice() {
 				</div>
 			</div>
 		</>
+	);
+}
+
+export default function RegisterDevice() {
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<RegisterDeviceInner />
+		</Suspense>
 	);
 }
