@@ -1,17 +1,16 @@
 import { Timestamp } from 'firebase/firestore';
 
-export type MediaType = 'image' | 'video';
+export type MediaType = 'image' | 'video' | string;
 
 export interface MediaItem {
-	id: string;
-	url: string;
-	localUrl?: string;
+	id?: string;
+	contentType?: string;
 	type: MediaType;
-	duration?: number; // in seconds (optional, for videos)
+	url: string;
+	duration?: string; // in seconds (optional, for videos)
 }
 
 export interface Zone {
-	type: string;
 	duration?: string;
 	items: MediaItem[];
 }

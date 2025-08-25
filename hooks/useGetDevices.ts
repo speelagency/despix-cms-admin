@@ -1,24 +1,40 @@
 import { useEffect, useState } from 'react';
-import { collection, doc, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 import { Device } from '@/app/types/types';
-import { db } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 
 export const useGetDevices = () => {
 	const [devices, setDevices] = useState<Device[]>([]);
 	const [error, setError] = useState<Error | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [userId, setUserId] = useState<string | null>(auth.currentUser?.uid ?? null);
 
 	useEffect(() => {
+		const unsubscribeAuth = onAuthStateChanged(auth, user => {
+			setUserId(user?.uid ?? null);
+		});
+		return () => unsubscribeAuth();
+	}, []);
+
+	useEffect(() => {
+		if (!userId) {
+			setDevices([]);
+			setLoading(false);
+			return;
+		}
+
 		const ref = collection(db, 'devices');
+		const q = query(ref, where('adminId', '==', userId));
 
 		const unsubscribe = onSnapshot(
-			ref,
+			q,
 			snapshot => {
 				const devices: Device[] = [];
-				snapshot.forEach(doc => {
+				snapshot.forEach(docSnap => {
 					devices.push({
-						id: doc.id, // ✅ Firestore doc id
-						...(doc.data() as Omit<Device, 'id'>)
+						id: docSnap.id,
+						...(docSnap.data() as Omit<Device, 'id'>),
 					});
 				});
 
@@ -32,7 +48,7 @@ export const useGetDevices = () => {
 		);
 
 		return () => unsubscribe();
-	}, []);
+	}, [userId]);
 
 	return { devices, error, loading };
 };

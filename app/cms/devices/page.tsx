@@ -6,7 +6,7 @@ import { SiteHeader } from '@/components/site-header';
 import { useEffect } from 'react';
 import { useGetDevices } from '@/hooks/useGetDevices';
 
-export default function Page() {
+export default function Device(hideHeader: { hideHeader?: boolean }) {
 	const { devices, loading, error } = useGetDevices();
 
 	useEffect(() => {
@@ -19,7 +19,7 @@ export default function Page() {
 		!loading &&
 		devices.length > 0 && (
 			<>
-				<SiteHeader label={'Dispositivos'} />
+				{!hideHeader && <SiteHeader label={'Dispositivos'} />}
 				<DeviceTable data={devices} />
 			</>
 		)

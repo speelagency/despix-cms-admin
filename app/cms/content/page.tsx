@@ -1,5 +1,6 @@
 'use client';
 
+import { MediaItem } from '@/app/types/types';
 import { SiteHeader } from '@/components/site-header';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -10,10 +11,12 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { useGetFiles } from '@/hooks/useGetFiles';
 import { auth, storage } from '@/lib/firebase';
 import { getDownloadURL, getMetadata, listAll, ref } from 'firebase/storage';
 import Image from 'next/image';
@@ -21,63 +24,58 @@ import { useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { toast } from 'sonner';
 
-export default function Content() {
+export default function Content({
+	hideHeader,
+	selectedItems,
+	handleNewItems,
+}: {
+	hideHeader?: boolean;
+	selectedItems?: MediaItem[];
+	handleNewItems?: (items: MediaItem[]) => void;
+}) {
 	const [user, loading, error] = useAuthState(auth);
-	const [files, setFiles] = useState<{ fileType: string; url: string }[]>([]);
-	const [checkedFiles, setCheckedFiles] = useState<{ fileType: string; url: string }[]>([]);
+	// const [files, setFiles] = useState<MediaItem[]>([]);
+	const { files, refreshFiles } = useGetFiles();
+	const [checkedFiles, setCheckedFiles] = useState<MediaItem[]>([]);
+
+	const isSelected = (file: MediaItem) => selectedItems?.some(item => item.url === file.url);
 
 	useEffect(() => {
-		if (!loading && user) {
-			fetchContent();
+		if (selectedItems) {
+			setCheckedFiles(selectedItems);
 		}
-	}, [loading, user]);
+	}, []);
 
 	useEffect(() => {
-		if (checkedFiles.length > 0) {
-			toast(
-				checkedFiles.length +
-					(checkedFiles.length > 1 ? ' archivos seleccionados' : ' archivo seleccionado'),
-				{
-					id: 'checked-files-toast',
-					description:
-						'Crear nuevo playlist con ' +
-						(checkedFiles.length > 1 ? 'los archivos seleccionados' : 'el archivo seleccionado'),
-					action: {
-						label: 'Crear',
-						onClick: () => console.log(checkedFiles),
-					},
-					duration: Infinity,
-				}
-			);
+		if (!handleNewItems) {
+			if (checkedFiles.length > 0) {
+				toast(
+					checkedFiles.length +
+						(checkedFiles.length > 1 ? ' archivos seleccionados' : ' archivo seleccionado'),
+					{
+						id: 'checked-files-toast',
+						description:
+							'Crear nuevo playlist con ' +
+							(checkedFiles.length > 1 ? 'los archivos seleccionados' : 'el archivo seleccionado'),
+						action: {
+							label: 'Crear',
+							onClick: () => console.log(checkedFiles),
+						},
+						duration: Infinity,
+					}
+				);
+			} else {
+				toast.dismiss('checked-files-toast');
+			}
 		} else {
-			toast.dismiss('checked-files-toast');
+			handleNewItems(checkedFiles);
 		}
 	}, [checkedFiles]);
 
-	const fetchContent = async () => {
-		const storageRef = await ref(storage, user?.uid);
-		const results = await listAll(storageRef);
-
-		const filesArray = await Promise.all(
-			results.items.map(async itemRef => {
-				const data = await getMetadata(itemRef);
-				const url = await getDownloadURL(itemRef);
-
-				const fileObj = {
-					fileType: data.contentType ? data.contentType : '',
-					url,
-				};
-
-				return fileObj;
-			})
-		);
-
-		setFiles(filesArray);
-	};
-
 	return (
 		<>
-			<SiteHeader label={'Contenido'} />
+			{!hideHeader && <SiteHeader label={'Contenido'} />}
+			<Button onClick={refreshFiles}>Refrescar contenido</Button>
 			{files.length > 0 && (
 				<div className="w-full">
 					<div className="flex flex-1 flex-col gap-4 p-4">
@@ -95,10 +93,10 @@ export default function Content() {
 											{file.fileType.includes('image') ? 'Imagen' : 'Video'}
 										</Badge> */}
 											<Badge
-												variant={file.fileType.includes('image') ? 'secondary' : 'default'}
+												variant={file.type.includes('image') ? 'secondary' : 'default'}
 												className="absolute top-2 left-2 z-2"
 											>
-												{file.fileType.split('/')[1]}
+												{file.contentType}
 											</Badge>
 											<Checkbox
 												id="toggle-2"
@@ -117,12 +115,13 @@ export default function Content() {
 
 											<div className="absolute top-0 left-0 w-full h-full z-1 inset-0 bg-[radial-gradient(circle_at_top_right,rgba(0,0,0,0.4),transparent_30%)] pointer-events-none" />
 
-											{file.fileType.includes('image') ? (
+											{file.type.includes('image') ? (
 												<Image
 													src={file.url}
 													fill
-													objectFit="cover"
+													style={{ objectFit: 'cover' }}
 													alt=""
+													sizes="(max-width: 768px) 100vw, 25vw"
 												/>
 											) : (
 												<video
